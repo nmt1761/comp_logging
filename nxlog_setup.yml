@@ -1,0 +1,62 @@
+---
+- hosts: nxlog_servers
+  become: true
+  become_user: root
+
+  tasks:
+    - name: Upload NXLog installer to remote Ubuntu server
+      copy:
+        src: nxlog-5.4.7313_ubuntu20_amd64.tar.bz2
+        dest: /root/
+        mode: '0755'
+      when: "ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'focal'"
+
+    - name: Install NXLog on Ubuntu Focal
+      shell:
+        cmd: |
+          mkdir -p nxlog; tar -xvf nxlog-5.4.7313_ubuntu20_amd64.tar.bz2 -C nxlog;
+          apt install -y ./nxlog/*.deb;
+      when: "ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'focal'"
+
+    - name: Copy the "ubuntu.conf" configuration file to the NXLog config directory
+      copy:
+        src: config/ubuntu.conf
+        dest: /opt/nxlog/etc/nxlog.d/ubuntu.conf
+        owner: nxlog
+        group: nxlog
+        mode: '0755'
+      when: "ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'focal'"
+
+    - name: Restarting NXLog on Ubuntu Focal
+      command: systemctl restart nxlog
+      when: "ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'focal'"
+
+#====================================================================================================#
+
+    - name: Upload NXLog installer to remote Windows server
+      copy:
+        src: nxlog-5.4.7313_windows_x64.msi
+        dest: C:\Users\administrator
+        owner: nxlog
+        group: nxlog
+      when: ansible_distribution == 'Windows'
+
+    - name: Install NXLog on Windows
+      win_package:
+        path: C:\Users\administrator\nxlog-5.4.7313_windows_x64.msi
+        state: present
+      when: ansible_distribution == 'Windows'
+
+    - name: Copy new "windows.conf" file into the NXLog default config directory
+      copy:
+        src: config/windows.conf
+        dest: C:\Program Files\nxlog\conf\nxlog.d\windows.conf
+        owner: nxlog
+        group: nxlog
+        mode: '750'
+      when: ansible_distribution == 'Windows'
+
+    - name: Set nxlog service startup mode to auto and ensure it's started.
+      win_service:
+        name: nxlog
+        state: restarted

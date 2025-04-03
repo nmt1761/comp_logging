@@ -1,6 +1,0 @@
-#This is where the ansible script to set up the graylog open server will be, huzzah!
-
-- hosts: graylog_server
-  become: true
-  tasks:
-

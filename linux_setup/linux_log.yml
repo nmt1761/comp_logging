@@ -1,53 +1,34 @@
 #This is where the script installing nxlog on ubuntu devices will go, huzzah!
 
 ---
-- hosts: nxlog_servers
+- hosts: linventory.ini
   become: true
   become_user: root
 
   tasks:
     - name: Upload NXLog installer to remote Ubuntu server
       copy:
-        src: nxlog-5.4.7313_ubuntu20_amd64.tar.bz2
+        src: nxlog-trial-6.6.9843_ubuntu24_amd64.tar.bz2
         dest: /root/
         mode: '0755'
-      when: "ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'focal'"
+      when: "ansible_distribution == 'Ubuntu'"
 
-    - name: Install NXLog on Ubuntu Focal
+    - name: Install NXLog on Ubuntu
       shell:
         cmd: |
-          mkdir -p nxlog; tar -xvf nxlog-5.4.7313_ubuntu20_amd64.tar.bz2 -C nxlog;
+          mkdir -p nxlog; tar -xvf nxlog-trial-6.6.9843_ubuntu24_amd64.tar.bz2 -C nxlog;
           apt install -y ./nxlog/*.deb;
-      when: "ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'focal'"
+      when: "ansible_distribution == 'Ubuntu'"
 
     - name: Copy the "ubuntu.conf" configuration file to the NXLog config directory
       copy:
-        src: config/ubuntu.conf
+        src: ubuntu.conf
         dest: /opt/nxlog/etc/nxlog.d/ubuntu.conf
         owner: nxlog
         group: nxlog
         mode: '0755'
-      when: "ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'focal'"
+      when: "ansible_distribution == 'Ubuntu'"
 
-    - name: Restarting NXLog on Ubuntu Focal
+    - name: Restarting NXLog on Ubuntu
       command: systemctl restart nxlog
-      when: "ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'focal'"
-
-
-
-- hosts: linux
-  tasks:
-    - name: Install NXLog (Linux)
-      apt:
-        name: nxlog
-        state: present
-
-    - name: Copy NXLog config (Linux)
-      copy:
-        src: nxlog.conf
-        dest: /etc/nxlog/nxlog.conf   # Linux path
-
-    - name: Start NXLog service (Linux)
-      service:
-        name: nxlog
-        state: started
+      when: "ansible_distribution == 'Ubuntu'"
